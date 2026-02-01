@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">AssistMVP</string>
+
+    <string name="app_title">Asistan MVP</string>
+    <string name="app_subtitle">Komut yaz veya butonlardan birini seç. (Türkçe)</string>
+
+    <string name="command_hint">Örn: kayboldum / ara / mesaj / mhrs</string>
+    <string name="btn_run_command">Komutu Çalıştır</string>
+
+    <string name="btn_lost">Kayboldum / Kurtarma Modu</string>
+    <string name="btn_call">Arama Yap</string>
+    <string name="btn_message">Mesaj At</string>
+    <string name="btn_mhrs">MHRS Randevu</string>
+    <string name="btn_open_accessibility">Erişilebilirlik Ayarlarını Aç</string>
+
+    <string name="status_ready">Durum: Hazır</string>
+
+    <string name="accessibility_service_desc">Asistan Erişilebilirlik Servisi</string>
+</resources>
