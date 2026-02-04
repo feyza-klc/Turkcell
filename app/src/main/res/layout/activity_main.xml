@@ -41,6 +41,11 @@
             android:text="Komutu Çalıştır"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="18dp"/>
+        <Button
+            android:id="@+id/btnMic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Konuş 🎤" />
 
         <Button
             android:id="@+id/btnLost"

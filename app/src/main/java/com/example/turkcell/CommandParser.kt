@@ -17,7 +17,7 @@ object CommandParser {
                 CommandType.LOST
 
             // Arama
-            t.contains("ara") || t.contains("arama") || t.contains("telefon") ->
+            t == "ara" || t.contains("arama") || t.contains("telefon") ->
                 CommandType.CALL
 
             // Mesaj
