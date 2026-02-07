@@ -1,14 +1,19 @@
 package com.example.turkcell
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
-import android.speech.RecognizerIntent
-import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
@@ -16,35 +21,48 @@ import java.util.Locale
 
 class GuideOverlayService : Service(), TextToSpeech.OnInitListener {
 
+    companion object {
+        const val EXTRA_MODE = "mode" // "MHRS" veya "CALL"
+        private const val NOTIF_ID = 1
+        private const val CHANNEL_ID = "guide_channel"
+    }
+
     private lateinit var wm: WindowManager
     private var overlayView: View? = null
-
     private lateinit var tts: TextToSpeech
-    private var speech: SpeechRecognizer? = null
 
     private lateinit var tvStep: TextView
 
     override fun onCreate() {
         super.onCreate()
-
         tts = TextToSpeech(this, this)
         wm = getSystemService(WINDOW_SERVICE) as WindowManager
-
-        startForeground(1, buildNotification())
-
+        startForeground(NOTIF_ID, buildNotification())
         showOverlay()
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Mode’u intent’ten al, rehberi sıfırla
+        val mode = intent?.getStringExtra(EXTRA_MODE) ?: GuideScript.MODE_MHRS
+        GuideScript.setGuideMode(mode)
+
+        // Overlay açıksa ilk adımı güncelle/oku
+        overlayView?.let {
+            speakAndShow(GuideScript.current())
+        }
+
+        return START_STICKY
+    }
+
     private fun buildNotification(): Notification {
-        val channelId = "guide_channel"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val ch = NotificationChannel(channelId, "Guide", NotificationManager.IMPORTANCE_LOW)
+            val ch = NotificationChannel(CHANNEL_ID, "Guide", NotificationManager.IMPORTANCE_LOW)
             (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(ch)
         }
-        return NotificationCompat.Builder(this, channelId)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Rehberlik açık")
-            .setContentText("MHRS adımlarında yardımcı oluyorum.")
-            .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .setContentText("Adım adım yönlendiriyorum.")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .build()
     }
 
@@ -59,45 +77,21 @@ class GuideOverlayService : Service(), TextToSpeech.OnInitListener {
         val btnPrev = overlayView!!.findViewById<Button>(R.id.btnPrev)
         val btnRepeat = overlayView!!.findViewById<Button>(R.id.btnRepeat)
         val btnRestart = overlayView!!.findViewById<Button>(R.id.btnRestart)
-        val btnMic = overlayView!!.findViewById<Button>(R.id.btnMic)
         val btnClose = overlayView!!.findViewById<Button>(R.id.btnClose)
-
-        fun speakAndShow(text: String) {
-            tvStep.text = "(${GuideScript.index + 1}/${GuideScript.mhrsSteps.size}) $text"
-            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "guide")
-        }
-
-        // İlk adımı oku
-        speakAndShow(GuideScript.current())
 
         btnNext.setOnClickListener { speakAndShow(GuideScript.next()) }
         btnPrev.setOnClickListener { speakAndShow(GuideScript.prev()) }
         btnRepeat.setOnClickListener { speakAndShow(GuideScript.current()) }
         btnRestart.setOnClickListener { speakAndShow(GuideScript.restart()) }
+        btnClose.setOnClickListener { stopSelf() }
 
-        btnMic.setOnClickListener {
-            startListeningOnce { spoken ->
-                val t = spoken.lowercase()
-                when {
-                    t.contains("devam") || t.contains("ileri") -> speakAndShow(GuideScript.next())
-                    t.contains("geri") -> speakAndShow(GuideScript.prev())
-                    t.contains("tekrar") -> speakAndShow(GuideScript.current())
-                    t.contains("baştan") || t.contains("sıfırla") -> speakAndShow(GuideScript.restart())
-                    else -> speakAndShow("Anlayamadım. Devam, geri, tekrar veya baştan diyebilirsin.")
-                }
-            }
-        }
-
-        btnClose.setOnClickListener {
-            stopSelf()
-        }
-
-        // Sürüklenebilir yap (overlay'i tutup sürükleme)
+        // sürükle-bırak (overlay'i taşı)
         overlayView!!.setOnTouchListener(object : View.OnTouchListener {
             private var lastX = 0f
             private var lastY = 0f
             private var paramX = 0
             private var paramY = 0
+
             override fun onTouch(v: View, event: MotionEvent): Boolean {
                 val params = v.layoutParams as WindowManager.LayoutParams
                 when (event.action) {
@@ -135,25 +129,15 @@ class GuideOverlayService : Service(), TextToSpeech.OnInitListener {
         }
 
         wm.addView(overlayView, params)
+
+        // İlk metin
+        speakAndShow(GuideScript.current())
     }
 
-    private fun startListeningOnce(onResult: (String) -> Unit) {
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
-            onResult("")
-            return
-        }
-        if (speech == null) speech = SpeechRecognizer.createSpeechRecognizer(this)
-
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "tr-TR")
-        }
-
-        val listener = SimpleRecognitionListener { text ->
-            onResult(text)
-        }
-        speech?.setRecognitionListener(listener)
-        speech?.startListening(intent)
+    private fun speakAndShow(text: String) {
+        val total = GuideScript.size()
+        tvStep.text = "(${GuideScript.index + 1}/$total) $text"
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "guide")
     }
 
     override fun onInit(status: Int) {
@@ -164,8 +148,6 @@ class GuideOverlayService : Service(), TextToSpeech.OnInitListener {
         super.onDestroy()
         overlayView?.let { wm.removeView(it) }
         overlayView = null
-        speech?.destroy()
-        speech = null
         tts.stop()
         tts.shutdown()
     }

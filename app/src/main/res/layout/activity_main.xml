@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#F6F3FF">
 
     <LinearLayout
         android:id="@+id/root"
@@ -10,83 +12,135 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/titleText"
+        <!-- HERO CARD -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Asistan"
-            android:textSize="24sp"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@android:drawable/dialog_holo_light_frame">
+
+            <TextView
+                android:id="@+id/titleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Asistan"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/subTitleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Telefonunu adım adım birlikte kullanırız."
+                android:textSize="14sp"
+                android:paddingTop="6dp" />
+        </LinearLayout>
+
+        <!-- COMMAND CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:background="@android:drawable/dialog_holo_light_frame">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Komut"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/commandInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Örn: kayboldum / ara / mesaj / mhrs"
+                android:inputType="text"
+                android:padding="12dp"
+                android:layout_marginTop="8dp"
+                android:background="@android:drawable/editbox_background_normal" />
+
+            <Button
+                android:id="@+id/btnRunCommand"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Komutu Çalıştır"
+                android:layout_marginTop="10dp" />
+
+            <Button
+                android:id="@+id/btnMic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🎤 Konuş"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <!-- QUICK ACTIONS -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hızlı İşlemler"
             android:textStyle="bold"
-            android:paddingBottom="12dp"/>
-
-        <TextView
-            android:id="@+id/subTitleText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Komut yaz veya butonlardan birini seç."
-            android:paddingBottom="12dp"/>
-
-        <EditText
-            android:id="@+id/commandInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Örn: kayboldum / ekranı oku / ara / mesaj / mhrs"
-            android:inputType="text"
-            android:padding="12dp"/>
-
-        <Button
-            android:id="@+id/btnRunCommand"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Komutu Çalıştır"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="18dp"/>
-        <Button
-            android:id="@+id/btnMic"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Konuş 🎤" />
+            android:textSize="14sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
 
         <Button
             android:id="@+id/btnLost"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Kayboldum / Kurtarma Modu"
-            android:layout_marginBottom="10dp"/>
+            android:text="🆘 Kayboldum / Kurtarma Modu"
+            android:layout_marginBottom="10dp" />
 
         <Button
             android:id="@+id/btnCall"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Arama Yap"
-            android:layout_marginBottom="10dp"/>
+            android:text="📞 Arama Yap"
+            android:layout_marginBottom="10dp" />
 
         <Button
             android:id="@+id/btnMsg"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Mesaj At"
-            android:layout_marginBottom="10dp"/>
+            android:text="💬 Mesaj At"
+            android:layout_marginBottom="10dp" />
 
         <Button
             android:id="@+id/btnMhrs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="MHRS Randevu"
-            android:layout_marginBottom="10dp"/>
+            android:text="🏥 MHRS Randevu"
+            android:layout_marginBottom="10dp" />
 
         <Button
             android:id="@+id/btnOpenAccessibilitySettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Erişilebilirlik Ayarlarını Aç"
-            android:layout_marginTop="14dp"/>
+            android:text="⚙️ Erişilebilirlik Ayarlarını Aç"
+            android:layout_marginTop="6dp" />
 
+        <!-- STATUS CHIP -->
         <TextView
             android:id="@+id/statusText"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Durum: Hazır"
-            android:paddingTop="14dp"/>
+            android:textSize="13sp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:layout_marginTop="16dp"
+            android:background="@android:drawable/btn_default_small" />
+
+        <!-- Bottom breathing space -->
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="18dp" />
+
     </LinearLayout>
 </ScrollView>

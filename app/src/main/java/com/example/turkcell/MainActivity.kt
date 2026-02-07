@@ -130,14 +130,61 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
             CommandType.CALL -> {
                 statusText.text = "Durum: Arama modu"
-                speak("Arama ekranını açıyorum.")
+                speak("Arama ekranını açıyorum. Rehberlik penceresi açıldı.")
                 AccessibilityActions.openDialer(this)
+
+                // Overlay izni kontrol (MHRS'de yaptığın gibi)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    if (!android.provider.Settings.canDrawOverlays(this)) {
+                        val i = Intent(
+                            android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            android.net.Uri.parse("package:$packageName")
+                        )
+                        startActivity(i)
+                        speak("Devam etmek için diğer uygulamaların üzerinde göster izni vermelisin.")
+                        return
+                    }
+                }
+
+                val svcIntent = Intent(this, GuideOverlayService::class.java).apply {
+                    putExtra(GuideOverlayService.EXTRA_MODE, GuideScript.MODE_CALL)
+                }
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    startForegroundService(svcIntent)
+                } else {
+                    startService(svcIntent)
+                }
             }
+
 
             CommandType.MESSAGE -> {
                 statusText.text = "Durum: Mesaj modu"
-                speak("Mesaj ekranını açıyorum.")
+                speak("Mesaj ekranını açıyorum. Rehberlik penceresi açıldı.")
                 AccessibilityActions.openSms(this)
+
+                // Overlay izni kontrolü
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    if (!android.provider.Settings.canDrawOverlays(this)) {
+                        val i = Intent(
+                            android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            android.net.Uri.parse("package:$packageName")
+                        )
+                        startActivity(i)
+                        speak("Devam etmek için diğer uygulamaların üzerinde göster izni vermelisin.")
+                        return
+                    }
+                }
+
+                val svcIntent = Intent(this, GuideOverlayService::class.java).apply {
+                    putExtra(GuideOverlayService.EXTRA_MODE, GuideScript.MODE_MESSAGE)
+                }
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    startForegroundService(svcIntent)
+                } else {
+                    startService(svcIntent)
+                }
             }
 
             CommandType.MHRS -> {
